@@ -323,11 +323,7 @@ neverallow * rootfs:file { create write setattr relabelto append unlink link ren
 
 # Restrict context mounts to specific types marked with
 # the contextmount_type attribute.
-ifelse(shipping_build, `true',
-  `neverallow * {fs_type -contextmount_type}:filesystem relabelto;'
-,
-  `neverallow * {fs_type -contextmount_type -sdcard_posix}:filesystem relabelto;'
-)
+neverallow * {fs_type -contextmount_type}:filesystem relabelto;
 
 # Ensure that context mount types are not writable, to ensure that
 # the write to /system restriction above is not bypassed via context=
@@ -425,7 +421,7 @@ neverallow * { file_type fs_type dev_type }:{ lnk_file fifo_file sock_file } mou
 # Nobody should be able to execute su on user builds.
 # On userdebug/eng builds, only dumpstate, shell, and
 # su itself execute su.
-neverallow { domain userdebug_or_eng(`-dumpstate -shell -su -domain') } su_exec:file no_x_file_perms;
+neverallow { domain userdebug_or_eng(`-dumpstate -shell -su') } su_exec:file no_x_file_perms;
 
 # Do not allow the introduction of new execmod rules. Text relocations
 # and modification of executable pages are unsafe.
@@ -506,7 +502,7 @@ neverallow {
 
 # Only domains spawned from zygote and runas may have the appdomain attribute.
 neverallow { domain -runas -zygote } {
-  appdomain -shell userdebug_or_eng(`-su -sudaemon -qti-testscripts') -bluetooth
+  appdomain -shell userdebug_or_eng(`-su') -bluetooth
 }:process { transition dyntransition };
 
 # Minimize read access to shell- or app-writable symlinks.
